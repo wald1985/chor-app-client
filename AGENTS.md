@@ -59,7 +59,9 @@ feature (auth) was built — don't reintroduce RTK Query.
   `src/lib/http/httpError.ts` (`HttpError`, `getErrorMessage`). Auth-header
   injection: module-level `setAuthToken(token | null)`, called by
   `authSlice` whenever the session's token changes — the HTTP client has
-  no direct dependency on Redux.
+  no direct dependency on Redux. Base URL comes from
+  `src/utils/apiConfig.ts` (`apiUrl`) — never read `VITE_API_URL`
+  directly anywhere else.
 
 ## Implemented so far
 
@@ -93,10 +95,16 @@ See `../chor-app-docs/decisions/0005-deployment-and-cicd.md` for full
 rationale. Summary:
 - `Dockerfile`: builds the Vite app, serves it via `nginx:alpine`
   (`nginx.conf` has the SPA fallback to `index.html` client-side routing
-  needs). `VITE_API_URL` is a **required** build `ARG` — Vite bakes
-  `VITE_*` vars in at build time, so it can't be supplied later at
-  container-run time; the build fails loudly if it's missing rather than
-  silently shipping a bundle pointed at `localhost`.
+  needs).
+- **API URL (supersedes ADR 0005's "`VITE_API_URL` required build ARG"):**
+  the deploy server has **no `.env`**, so the production API URL is not a
+  build/env var. `src/utils/apiConfig.ts` picks it at runtime from
+  `window.location.hostname` (`prodApiUrls` map, e.g. `chorapp.wald.pro` →
+  `https://chorappserver.wald.pro`); only dev/tests use `VITE_API_URL`
+  from the local `.env`. A new deployment domain must be added to that map
+  (and to the server's CORS `allowedOrigins`) — an unmapped host makes
+  every request fail with a clear `HttpError` instead of silently hitting
+  nginx's `index.html` fallback.
 - `.github/workflows/ci.yml` — lint/format-check/type-check/test/build,
   every push and PR, no secrets. No deploy-to-server job exists yet for
   this repo (unlike `chor-app-server`) — needs a target host decision

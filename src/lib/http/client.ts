@@ -1,3 +1,4 @@
+import { apiUrl } from "../../utils/apiConfig"
 import { HttpError } from "./httpError"
 
 type HttpMethod = "GET" | "POST" | "PATCH" | "PUT" | "DELETE"
@@ -10,7 +11,6 @@ type RequestOptions = {
 }
 
 const DEFAULT_TIMEOUT_MS = 15000
-const baseUrl = import.meta.env.VITE_API_URL ?? "http://localhost:5000"
 
 let authToken: string | null = null
 
@@ -66,6 +66,15 @@ async function request<TResponse>(
     timeoutMs = DEFAULT_TIMEOUT_MS,
   } = options
 
+  // Without this, a relative request would hit nginx's SPA fallback and get
+  // `index.html` back with a 200 — a silent failure instead of an error.
+  if (!apiUrl) {
+    throw new HttpError(
+      0,
+      `Für ${window.location.hostname} ist keine Server-Adresse konfiguriert.`,
+    )
+  }
+
   const controller = new AbortController()
   const timeoutId = setTimeout(() => {
     controller.abort()
@@ -80,7 +89,7 @@ async function request<TResponse>(
 
   let response: Response
   try {
-    response = await fetch(`${baseUrl}${path}`, {
+    response = await fetch(`${apiUrl}${path}`, {
       method,
       headers,
       body: body !== undefined ? JSON.stringify(body) : undefined,
