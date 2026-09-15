@@ -1,42 +1,70 @@
-name: CI
+name: Docker Build and Deploy - Smart Soft System
 
 on:
   push:
-    branches: ["main"]
+    branches: [ "main" ]
   pull_request:
-    branches: ["main"]
+    branches: [ "main" ]
+
+env:
+  DOCKER_IMAGE: "chor_app_client"
+  DEPLOY_DIR: "/opt/chor_app_client/"
+  CONTAINER_NAME: "chor_app_client"
 
 jobs:
-  build-and-test:
+  build-and-deploy:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout code
+        uses: actions/checkout@v4
 
-      - name: Use Node.js
-        uses: actions/setup-node@v4
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build Docker image
+        run: |
+          docker build -t $DOCKER_IMAGE .
+
+      - name: Save Docker image
+        run: |
+          docker save $DOCKER_IMAGE -o $DOCKER_IMAGE.tar
+
+      # Шаг: Настройка SSH-ключа
+      - name: Install SSH Key
+        uses: shimataro/ssh-key-action@v2
         with:
-          node-version: "24"
-          cache: "npm"
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          known_hosts: unnecessary_if_strict_checking_off
+          if_key_exists: replace
 
-      - name: Install dependencies
-        run: npm ci
+      # Шаг: Создание директории (используем стандартный ssh)
+      - name: Create deploy directory
+        run: |
+          ssh -o StrictHostKeyChecking=no ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_IP }} "mkdir -p $DEPLOY_DIR"
 
-      - name: Lint
-        run: npm run lint
+      # Шаг: Копирование файлов (используем стандартный scp)
+      - name: Copy files to remote server
+        run: |
+          scp -o StrictHostKeyChecking=no $DOCKER_IMAGE.tar docker-compose.yml ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_IP }}:$DEPLOY_DIR
 
-      - name: Format check
-        run: npm run format:check
+      # Шаг: Развертывание
+      - name: Deploy Docker container
+        run: |
+          ssh -o StrictHostKeyChecking=no ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_IP }} "
+            cd $DEPLOY_DIR &&
+            docker load -i $DOCKER_IMAGE.tar &&
+            docker-compose down || true &&
+            docker-compose up -d &&
+            docker ps | grep $CONTAINER_NAME
+          "
 
-      - name: Type-check
-        run: npm run type-check
-
-      - name: Test
-        run: npm test
-
-      - name: Build
-        # A placeholder is enough here - this just checks the app builds;
-        # the real value is supplied at image-build time (see Dockerfile).
-        run: npm run build
-        env:
-          VITE_API_URL: "http://localhost:5050"
+      # Шаг: Проверка
+      - name: Verify deployment
+        run: |
+          ssh -o StrictHostKeyChecking=no ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_IP }} "
+            echo '=== Container Status ===' &&
+            docker ps | grep $CONTAINER_NAME &&
+            echo '=== Recent Logs ===' &&
+            docker logs --tail 20 $CONTAINER_NAME
+          "
