@@ -2,9 +2,9 @@ name: Docker Build and Deploy - Smart Soft System
 
 on:
   push:
-    branches: [ "main" ]
+    branches: ["main"]
   pull_request:
-    branches: [ "main" ]
+    branches: ["main"]
 
 env:
   DOCKER_IMAGE: "chor_app_client"
@@ -12,7 +12,41 @@ env:
   CONTAINER_NAME: "chor_app_client"
 
 jobs:
+  # Runs on every push and PR. Nothing below it deploys unless this passes.
+  checks:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Use Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "24"
+          cache: "npm"
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Lint
+        run: npm run lint
+
+      - name: Format check
+        run: npm run format:check
+
+      - name: Type-check
+        run: npm run type-check
+
+      - name: Test
+        run: npm test
+
+      - name: Build
+        run: npm run build
+
   build-and-deploy:
+    # PRs only get the checks above - deploying needs a push to main.
+    if: github.event_name == 'push'
+    needs: checks
     runs-on: ubuntu-latest
 
     steps:
@@ -48,14 +82,16 @@ jobs:
         run: |
           scp -o StrictHostKeyChecking=no $DOCKER_IMAGE.tar docker-compose.yml ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_IP }}:$DEPLOY_DIR
 
-      # Шаг: Развертывание
+      # Шаг: Развертывание. `set -e` - любая упавшая команда (в т.ч.
+      # `docker load`) валит шаг, а не перезапускает старый образ молча.
       - name: Deploy Docker container
         run: |
           ssh -o StrictHostKeyChecking=no ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_IP }} "
-            cd $DEPLOY_DIR &&
-            docker load -i $DOCKER_IMAGE.tar &&
-            docker compose down || true &&
-            docker compose up -d &&
+            set -e
+            cd $DEPLOY_DIR
+            docker load -i $DOCKER_IMAGE.tar
+            docker compose down
+            docker compose up -d
             docker ps | grep $CONTAINER_NAME
           "
 

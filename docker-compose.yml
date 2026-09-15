@@ -3,6 +3,7 @@ services:
     build: .
     image: chor_app_client:latest
     container_name: chor_app_client
+    restart: unless-stopped
     ports:
       - "3012:80"
     command: nginx -g 'daemon off;'

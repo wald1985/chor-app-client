@@ -91,24 +91,34 @@ feature (auth) was built — don't reintroduce RTK Query.
   switcher — `HomePage` just lists the memberships login/me returned.
 
 ## Deployment & CI/CD
-See `../chor-app-docs/decisions/0005-deployment-and-cicd.md` for full
-rationale. Summary:
-- `Dockerfile`: builds the Vite app, serves it via `nginx:alpine`
-  (`nginx.conf` has the SPA fallback to `index.html` client-side routing
-  needs).
-- **API URL (supersedes ADR 0005's "`VITE_API_URL` required build ARG"):**
-  the deploy server has **no `.env`**, so the production API URL is not a
-  build/env var. `src/utils/apiConfig.ts` picks it at runtime from
-  `window.location.hostname` (`prodApiUrls` map, e.g. `chorapp.wald.pro` →
+
+**Working and deployed.** Full description + known issues:
+`../chor-app-docs/decisions/0006-deployment-as-implemented.md` (ADR 0005
+is superseded — don't follow it). Summary:
+
+- `.github/workflows/ci.yml`, job **`checks`** (every push and PR):
+  `npm run lint`, `format:check`, `type-check`, `test`, `build`. Keep all
+  of them green locally — `format:check` covers Markdown/YAML too, so run
+  `npm run format` after editing docs or workflows.
+- Job **`build-and-deploy`** runs only on a **push to `main`** after
+  `checks` passed — a PR never deploys. It builds the Docker image on the
+  runner, copies it + `docker-compose.yml` over SSH to
+  `/opt/chor_app_client/` and restarts `chor_app_client`
+  (`https://chorapp.wald.pro`, host port `3012` behind the host's TLS
+  reverse proxy, `restart: unless-stopped`). The remote script uses
+  `set -e` — don't reintroduce `|| true` into it, that's what used to hide
+  failed deploys. Secrets: `SSH_PRIVATE_KEY`, `SERVER_USER`, `SERVER_IP`.
+- `Dockerfile`: Vite build → `nginx:alpine` (`nginx.conf` has the SPA
+  fallback to `index.html` that client-side routing needs).
+- **API URL:** the host has **no `.env`** and there is no build arg.
+  `src/utils/apiConfig.ts` picks the URL at runtime from
+  `window.location.hostname` (`prodApiUrls`: `chorapp.wald.pro` →
   `https://chorappserver.wald.pro`); only dev/tests use `VITE_API_URL`
   from the local `.env`. A new deployment domain must be added to that map
-  (and to the server's CORS `allowedOrigins`) — an unmapped host makes
-  every request fail with a clear `HttpError` instead of silently hitting
-  nginx's `index.html` fallback.
-- `.github/workflows/ci.yml` — lint/format-check/type-check/test/build,
-  every push and PR, no secrets. No deploy-to-server job exists yet for
-  this repo (unlike `chor-app-server`) — needs a target host decision
-  first, see the ADR's open follow-ups.
+  **and** to `chor-app-server`'s CORS `allowedOrigins` — an unmapped host
+  makes every request fail with a clear `HttpError` instead of silently
+  hitting nginx's `index.html` fallback. Never read `VITE_API_URL`
+  anywhere else.
 - `.dockerignore` excludes `.env` — never let it land in an image layer.
 
 ## Language: German UI, English code
