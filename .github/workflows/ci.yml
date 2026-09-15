@@ -54,8 +54,8 @@ jobs:
           ssh -o StrictHostKeyChecking=no ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_IP }} "
             cd $DEPLOY_DIR &&
             docker load -i $DOCKER_IMAGE.tar &&
-            docker-compose down || true &&
-            docker-compose up -d &&
+            docker compose down || true &&
+            docker compose up -d &&
             docker ps | grep $CONTAINER_NAME
           "
 
