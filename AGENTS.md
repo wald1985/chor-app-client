@@ -88,6 +88,21 @@ feature (auth) was built — don't reintroduce RTK Query.
 - No Community-scoped feature exists yet, so there's no "active Community"
   switcher — `HomePage` just lists the memberships login/me returned.
 
+## Deployment & CI/CD
+See `../chor-app-docs/decisions/0005-deployment-and-cicd.md` for full
+rationale. Summary:
+- `Dockerfile`: builds the Vite app, serves it via `nginx:alpine`
+  (`nginx.conf` has the SPA fallback to `index.html` client-side routing
+  needs). `VITE_API_URL` is a **required** build `ARG` — Vite bakes
+  `VITE_*` vars in at build time, so it can't be supplied later at
+  container-run time; the build fails loudly if it's missing rather than
+  silently shipping a bundle pointed at `localhost`.
+- `.github/workflows/ci.yml` — lint/format-check/type-check/test/build,
+  every push and PR, no secrets. No deploy-to-server job exists yet for
+  this repo (unlike `chor-app-server`) — needs a target host decision
+  first, see the ADR's open follow-ups.
+- `.dockerignore` excludes `.env` — never let it land in an image layer.
+
 ## Language: German UI, English code
 
 **The target UI/UX is German** (the audience — a German-speaking choir).
