@@ -1,0 +1,14 @@
+services:
+  app:
+    build:
+      context: .
+      args:
+        # Baked into the JS bundle at build time. Required - set it in a
+        # .env file next to this compose file (e.g. VITE_API_URL=https://...),
+        # or export it in the shell before running `docker compose build`.
+        VITE_API_URL: ${VITE_API_URL:?VITE_API_URL must be set (see comment above)}
+    image: chor_app_client:latest
+    container_name: chor_app_client
+    restart: unless-stopped
+    ports:
+      - "80:80"
