@@ -1,10 +1,12 @@
 # chor-app-client — agent instructions
 
 ## What this repo is
+
 React + TypeScript frontend for **Chor-App**, a choir repertoire/rehearsal
 tracker. Talks to the API in the sibling `chor-app-server` repo.
 
 ## Sibling repos (not a monorepo — kept separate on purpose)
+
 - `../chor-app-docs` — **specs and planning live here.** Before
   implementing any feature, read the relevant spec/proposal there:
   `openspec/specs/`, or an in-flight change under
@@ -18,6 +20,7 @@ tracker. Talks to the API in the sibling `chor-app-server` repo.
 - `../chor-app-server` — the backend API this frontend consumes.
 
 ## Stack & tooling
+
 Decided (see `../chor-app-docs/decisions/0001-client-stack.md` for full
 rationale — read it before touching state management or HTTP calls):
 
@@ -31,6 +34,10 @@ rationale — read it before touching state management or HTTP calls):
 - **react-bootstrap** (Bootstrap 5 React components) for UI — not plain
   Bootstrap CSS + JS bundle. **No Tailwind CSS** — don't add it alongside
   Bootstrap; styling goes through react-bootstrap/Bootstrap only.
+- **Stay as close to default Bootstrap look as possible.** Use
+  react-bootstrap components with default styling; custom CSS/SCSS is the
+  exception for something Bootstrap genuinely can't do, not the default
+  way of building a screen. No custom design system on top.
 - **Mobile-first** layout: build for the smallest screen first, then use
   Bootstrap's grid/breakpoints to progressively enhance for larger ones.
 - **No axios.** Use/extend the project's own fetch-based HTTP utility
@@ -38,11 +45,51 @@ rationale — read it before touching state management or HTTP calls):
   timeout/abort, hook for future auth-header injection). Do not add axios
   as a dependency.
 
-Bundler, package manager, lint/test setup: still **not decided/scaffolded**
-as of 2026-09-15 — check `package.json` and this file again once that's
-done, and update this section.
+**Scaffolded 2026-09-15:** Vite + `vitest` (+ `@testing-library/react`) +
+ESLint (`typescript-eslint` strict-type-checked) + Prettier
+(`semi: false`, `arrowParens: "avoid"`). `npm` (see `package-lock.json`).
+The repo started from the `redux-templates/redux-essentials` Vite
+template; its placeholder `counter`/`quotes` features (the latter used
+**RTK Query**, which ADR 0001 forbids) were removed when the first real
+feature (auth) was built — don't reintroduce RTK Query.
+
+- **Routing:** `react-router-dom` (`<BrowserRouter>`, plain `<Routes>`,
+  no data-router loaders/actions — nothing needs them yet).
+- **HTTP utility:** `src/lib/http/client.ts` (`httpClient.get/post`),
+  `src/lib/http/httpError.ts` (`HttpError`, `getErrorMessage`). Auth-header
+  injection: module-level `setAuthToken(token | null)`, called by
+  `authSlice` whenever the session's token changes — the HTTP client has
+  no direct dependency on Redux.
+
+## Implemented so far
+
+- **Auth** (`src/features/auth/`): register, login, forgot/reset password,
+  change password, session bootstrap-from-storage. Matches
+  `chor-app-server`'s `identity/registration-and-login` and
+  `identity/password-management` capabilities
+  (`../chor-app-docs/openspec/specs/identity/`) and
+  `decisions/0004-auth-mechanism.md`.
+  - `authSlice.ts` owns session state (`status`, `user`, `memberships`,
+    `remember`) per ADR 0001 ("session/auth info" is RTK's job). Actions
+    that don't establish/change a session (register, forgot-password) call
+    `authApi` directly from the page instead of going through the slice —
+    don't route every API call through Redux, only ones that affect the
+    session.
+  - **Token storage** (`tokenStorage.ts`): `localStorage` if the user
+    checked "Angemeldet bleiben" (remember me) at login/reset, otherwise
+    `sessionStorage`. Only one of the two ever holds the token at a time.
+  - Changing/resetting a password returns a **new** token
+    (`chor-app-server`'s `tokenVersion` invalidation) — always persist the
+    fresh token via the same mechanism (`saveToken`/`setAuthToken`), never
+    assume the old one still works.
+  - `RequireAuth`/`RequireGuest` (`components/`) gate routes on
+    `authSlice`'s status; both show a spinner while `bootstrap()` (session
+    restore from storage) is still resolving.
+- No Community-scoped feature exists yet, so there's no "active Community"
+  switcher — `HomePage` just lists the memberships login/me returned.
 
 ## Language: German UI, English code
+
 **The target UI/UX is German** (the audience — a German-speaking choir).
 **The domain model and all code are English** — component/prop/type
 names, state, API calls. Never put German identifiers in code; German
@@ -56,7 +103,37 @@ react-i18next for future multi-language support) is **not decided** —
 check `package.json` and this file again once it is.
 
 ## Conventions
+
 State-management split (RTK vs React Query) is decided — see Stack section
-above and ADR 0001. Folder structure, component patterns, and testing
-setup are **not established yet**. Update this section once decided rather
-than inventing conventions ad hoc.
+above and ADR 0001.
+
+**Folder structure**, established with the auth feature:
+
+- `src/features/<name>/` — one folder per feature: slice, API calls,
+  types, and that feature's own `pages/` and `components/` subfolders.
+- `src/pages/` — top-level/route pages that aren't tied to one feature
+  (e.g. `HomePage`).
+- `src/lib/` — framework-agnostic utilities usable by any feature (the
+  HTTP client lives here, per ADR 0001's suggested location).
+- `src/app/` — store, typed hooks (`useAppDispatch`/`useAppSelector` —
+  always use these, never the raw `react-redux` hooks, enforced by
+  `no-restricted-imports` in `eslint.config.js`), and cross-feature
+  wiring.
+
+**Component patterns:**
+
+- Slices use the `createAppSlice`/`create.asyncThunk` pattern
+  (`src/app/createAppSlice.ts`), not a separate `createAsyncThunk` +
+  `extraReducers`.
+- A page owns its own form state (`useState`) and submits via either an
+  `authSlice` thunk (`dispatch(...).unwrap()`) or a direct `*Api` call,
+  per the "does this change the session" rule above. No form library in
+  use yet — plain controlled inputs are enough for the forms so far;
+  reconsider only if a form gets complex enough to justify one.
+- React 19's `@types/react` deprecates `FormEvent`/`FormEventHandler` for
+  a `<form onSubmit>` — use `SubmitEvent` instead.
+
+**Testing:** `vitest` + `@testing-library/react`, jsdom environment.
+`src/utils/test-utils.tsx`'s `renderWithProviders` wraps a component with
+a real (or `preloadedState`-seeded) Redux store — use it instead of
+importing `Provider` directly in tests.

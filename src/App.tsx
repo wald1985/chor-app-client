@@ -1,64 +1,75 @@
-import "./App.css"
-import { Counter } from "./features/counter/Counter"
-import { Quotes } from "./features/quotes/Quotes"
-import logo from "./logo.svg"
+import { useEffect } from "react"
+import { BrowserRouter, Route, Routes } from "react-router-dom"
+import { useAppDispatch } from "./app/hooks"
+import { RequireAuth } from "./features/auth/components/RequireAuth"
+import { RequireGuest } from "./features/auth/components/RequireGuest"
+import { ChangePasswordPage } from "./features/auth/pages/ChangePasswordPage"
+import { ForgotPasswordPage } from "./features/auth/pages/ForgotPasswordPage"
+import { LoginPage } from "./features/auth/pages/LoginPage"
+import { RegisterPage } from "./features/auth/pages/RegisterPage"
+import { ResetPasswordPage } from "./features/auth/pages/ResetPasswordPage"
+import { bootstrap } from "./features/auth/authSlice"
+import { HomePage } from "./pages/HomePage"
 
-export const App = () => (
-  <div className="App">
-    <header className="App-header">
-      <img src={logo} className="App-logo" alt="logo" />
-      <Counter />
-      <p>
-        Edit <code>src/App.tsx</code> and save to reload.
-      </p>
-      <Quotes />
-      <span>
-        <span>Learn </span>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          React
-        </a>
-        <span>, </span>
-        <a
-          className="App-link"
-          href="https://redux.js.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Redux
-        </a>
-        <span>, </span>
-        <a
-          className="App-link"
-          href="https://redux-toolkit.js.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Redux Toolkit
-        </a>
-        <span>, </span>
-        <a
-          className="App-link"
-          href="https://react-redux.js.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          React Redux
-        </a>
-        ,<span> and </span>
-        <a
-          className="App-link"
-          href="https://reselect.js.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Reselect
-        </a>
-      </span>
-    </header>
-  </div>
-)
+export const App = () => {
+  const dispatch = useAppDispatch()
+
+  useEffect(() => {
+    void dispatch(bootstrap())
+  }, [dispatch])
+
+  return (
+    <BrowserRouter>
+      <Routes>
+        <Route
+          path="/"
+          element={
+            <RequireAuth>
+              <HomePage />
+            </RequireAuth>
+          }
+        />
+        <Route
+          path="/change-password"
+          element={
+            <RequireAuth>
+              <ChangePasswordPage />
+            </RequireAuth>
+          }
+        />
+        <Route
+          path="/login"
+          element={
+            <RequireGuest>
+              <LoginPage />
+            </RequireGuest>
+          }
+        />
+        <Route
+          path="/register"
+          element={
+            <RequireGuest>
+              <RegisterPage />
+            </RequireGuest>
+          }
+        />
+        <Route
+          path="/forgot-password"
+          element={
+            <RequireGuest>
+              <ForgotPasswordPage />
+            </RequireGuest>
+          }
+        />
+        <Route
+          path="/reset-password"
+          element={
+            <RequireGuest>
+              <ResetPasswordPage />
+            </RequireGuest>
+          }
+        />
+      </Routes>
+    </BrowserRouter>
+  )
+}
