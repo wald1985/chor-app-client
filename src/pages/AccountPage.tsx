@@ -12,21 +12,27 @@ const roleLabel = {
   MEMBER: "Mitglied",
 } as const
 
-export const HomePage = () => {
+/** Personal cabinet: account data and the Communities the User is a member of. Reached via the header's account menu ("Konto"). */
+export const AccountPage = () => {
   const dispatch = useAppDispatch()
   const user = useAppSelector(selectAuthUser)
   const memberships = useAppSelector(selectAuthMemberships)
 
   return (
-    <Container className="py-5">
+    <Container fluid="md" className="px-0">
       <Row className="justify-content-center">
-        <Col xs={12} sm={10} md={7} lg={5}>
+        <Col xs={12} md={8} lg={6}>
           <Card>
             <Card.Body>
               <Card.Title as="h1" className="h4">
-                Willkommen{user ? `, ${user.name}` : ""}
+                Konto
               </Card.Title>
-              {user ? <p className="text-muted mb-0">{user.email}</p> : null}
+              {user ? (
+                <>
+                  <p className="mb-0">{user.name}</p>
+                  <p className="text-muted">{user.email}</p>
+                </>
+              ) : null}
             </Card.Body>
             {memberships.length > 0 ? (
               <ListGroup variant="flush">
