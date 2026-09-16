@@ -1,6 +1,8 @@
 import { useEffect } from "react"
-import { BrowserRouter, Route, Routes } from "react-router-dom"
+import { BrowserRouter, Navigate, Route, Routes } from "react-router-dom"
 import { useAppDispatch } from "./app/hooks"
+import { AppLayout } from "./app/layout/AppLayout"
+import { navItems } from "./app/layout/navItems"
 import { RequireAuth } from "./features/auth/components/RequireAuth"
 import { RequireGuest } from "./features/auth/components/RequireGuest"
 import { ChangePasswordPage } from "./features/auth/pages/ChangePasswordPage"
@@ -9,7 +11,8 @@ import { LoginPage } from "./features/auth/pages/LoginPage"
 import { RegisterPage } from "./features/auth/pages/RegisterPage"
 import { ResetPasswordPage } from "./features/auth/pages/ResetPasswordPage"
 import { bootstrap } from "./features/auth/authSlice"
-import { HomePage } from "./pages/HomePage"
+import { AccountPage } from "./pages/AccountPage"
+import { PlaceholderPage } from "./pages/PlaceholderPage"
 
 export const App = () => {
   const dispatch = useAppDispatch()
@@ -25,18 +28,27 @@ export const App = () => {
           path="/"
           element={
             <RequireAuth>
-              <HomePage />
+              <AppLayout />
             </RequireAuth>
           }
-        />
-        <Route
-          path="/change-password"
-          element={
-            <RequireAuth>
-              <ChangePasswordPage />
-            </RequireAuth>
-          }
-        />
+        >
+          {/* Default landing tab, matching the prototype's initially active "Vortrag" tab. */}
+          <Route index element={<Navigate to="vortrag" replace />} />
+          {navItems.map(item => (
+            <Route
+              key={item.path}
+              path={item.path}
+              element={
+                <PlaceholderPage
+                  title={item.label}
+                  description={item.description}
+                />
+              }
+            />
+          ))}
+          <Route path="konto" element={<AccountPage />} />
+          <Route path="change-password" element={<ChangePasswordPage />} />
+        </Route>
         <Route
           path="/login"
           element={
