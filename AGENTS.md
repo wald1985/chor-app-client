@@ -87,8 +87,21 @@ feature (auth) was built — don't reintroduce RTK Query.
   - `RequireAuth`/`RequireGuest` (`components/`) gate routes on
     `authSlice`'s status; both show a spinner while `bootstrap()` (session
     restore from storage) is still resolving.
+- **Dashboard shell** (`src/app/layout/`): after login/register, `/`
+  redirects to a tab shell (`AppLayout` = `AppHeader` + `TabNav` +
+  `<Outlet/>`), not a plain welcome page. Tabs (`navItems.ts`) mirror the
+  target capability split from `../chor-app-docs/capability-breakdown.md`,
+  not the legacy prototype's 11 buttons 1:1 — see
+  `docs/feature/dashboard-shell/DASHBOARD_SHELL.md`. None of those
+  capabilities exist on `chor-app-server` yet, so every tab renders
+  `PlaceholderPage`; swap it for the real feature page once its capability
+  lands. Mobile-first: `TabNav`'s horizontal strip only shows from the
+  `md` breakpoint up — below that, `AppHeader` folds the same tabs into
+  its collapsible menu instead. Account data (name, email, Community
+  memberships, change password, sign out) moved off the landing page into
+  `AccountPage` at `/konto`, reachable from the header's account dropdown.
 - No Community-scoped feature exists yet, so there's no "active Community"
-  switcher — `HomePage` just lists the memberships login/me returned.
+  switcher — `AccountPage` just lists the memberships login/me returned.
 
 ## Deployment & CI/CD
 
@@ -131,6 +144,15 @@ only appears as UI copy strings. Full German<->English mapping:
 Rehearsal, Dirigent -> Conductor, Mappe -> Folder). This supersedes an
 earlier "keep German in code" instruction from initial setup.
 
+### Documentation language
+
+**Documentation language in this repo: Russian** (decided 2026-09-16).
+Everything under `docs/` (feature research, design, plans, e.g.
+`docs/feature/<feature>/`) is written in Russian. Code, identifiers,
+code comments, API, commit messages stay English; domain terms inside
+Russian text use the English names from the glossary (e.g. `Person`,
+`Rehearsal`). Specs/ADRs in `../chor-app-docs` stay English.
+
 Localization mechanism (hardcoded German strings vs. an i18n layer like
 react-i18next for future multi-language support) is **not decided** —
 check `package.json` and this file again once it is.
@@ -145,13 +167,13 @@ above and ADR 0001.
 - `src/features/<name>/` — one folder per feature: slice, API calls,
   types, and that feature's own `pages/` and `components/` subfolders.
 - `src/pages/` — top-level/route pages that aren't tied to one feature
-  (e.g. `HomePage`).
+  (e.g. `AccountPage`, `PlaceholderPage`).
 - `src/lib/` — framework-agnostic utilities usable by any feature (the
   HTTP client lives here, per ADR 0001's suggested location).
 - `src/app/` — store, typed hooks (`useAppDispatch`/`useAppSelector` —
   always use these, never the raw `react-redux` hooks, enforced by
   `no-restricted-imports` in `eslint.config.js`), and cross-feature
-  wiring.
+  wiring (e.g. `src/app/layout/` — the header/tab-navigation shell).
 
 **Component patterns:**
 
