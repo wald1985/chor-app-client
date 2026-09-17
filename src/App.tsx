@@ -11,6 +11,7 @@ import { LoginPage } from "./features/auth/pages/LoginPage"
 import { RegisterPage } from "./features/auth/pages/RegisterPage"
 import { ResetPasswordPage } from "./features/auth/pages/ResetPasswordPage"
 import { bootstrap } from "./features/auth/authSlice"
+import { bootstrapAdmin } from "./features/superadmin/adminAuthSlice"
 import { AccountPage } from "./pages/AccountPage"
 import { PlaceholderPage } from "./pages/PlaceholderPage"
 
@@ -19,6 +20,7 @@ export const App = () => {
 
   useEffect(() => {
     void dispatch(bootstrap())
+    void dispatch(bootstrapAdmin())
   }, [dispatch])
 
   return (
