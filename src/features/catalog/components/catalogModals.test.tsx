@@ -3,6 +3,8 @@ import { describe, expect, it, vi } from "vitest"
 import { renderWithProviders } from "../../../utils/test-utils"
 import { BookFormModal } from "./BookFormModal"
 import { SeriesFormModal } from "./SeriesFormModal"
+import { SongFormModal } from "./SongFormModal"
+import { SongThemesModal } from "./SongThemesModal"
 import { ThemeFormModal } from "./ThemeFormModal"
 import { UsageWarningModal } from "./UsageWarningModal"
 
@@ -101,5 +103,74 @@ describe("Catalog Modals", () => {
     await user.type(screen.getByLabelText("Name des Hauptthemas"), "Gebet")
     await user.click(screen.getByRole("button", { name: "Thema anlegen" }))
     expect(handleSubmit).toHaveBeenCalledWith("Gebet")
+  })
+
+  it("SongFormModal submits song number, title, author, and arranger", async () => {
+    const handleSubmit = vi.fn()
+    const handleCancel = vi.fn()
+
+    const { user } = renderWithProviders(
+      <SongFormModal
+        show={true}
+        onSubmit={handleSubmit}
+        onCancel={handleCancel}
+      />,
+    )
+
+    await user.type(screen.getByLabelText("Liednummer *"), "42")
+    await user.type(
+      screen.getByLabelText("Titel des Liedes *"),
+      "Großer Gott, wir loben dich",
+    )
+    await user.type(
+      screen.getByLabelText("Autor / Text (optional)"),
+      "Ignaz Franz",
+    )
+    await user.type(
+      screen.getByLabelText("Arrangeur / Melodie (optional)"),
+      "Peter Ritter",
+    )
+
+    await user.click(screen.getByRole("button", { name: "Lied anlegen" }))
+    expect(handleSubmit).toHaveBeenCalledWith({
+      number: "42",
+      title: "Großer Gott, wir loben dich",
+      author: "Ignaz Franz",
+      arranger: "Peter Ritter",
+    })
+  })
+
+  it("SongThemesModal toggles and submits selected themes", async () => {
+    const handleSubmit = vi.fn()
+    const handleCancel = vi.fn()
+
+    const themesList = [
+      { id: "t1", name: "Anbetung", songCount: 5, archived: false },
+      { id: "t2", name: "Dankbarkeit", songCount: 2, archived: false },
+    ]
+
+    const { user } = renderWithProviders(
+      <SongThemesModal
+        show={true}
+        songTitle="Lied 1"
+        songNumber="1"
+        currentThemeIds={["t1"]}
+        themesList={themesList}
+        onSubmit={handleSubmit}
+        onCancel={handleCancel}
+      />,
+    )
+
+    expect(screen.getByText("Themen zuweisen")).toBeInTheDocument()
+    expect(screen.getByText("Nr. 1 — Lied 1")).toBeInTheDocument()
+
+    // Toggle t2
+    const checkboxT2 = screen.getByLabelText("Dankbarkeit")
+    expect(checkboxT2).not.toBeChecked()
+    await user.click(checkboxT2)
+    expect(checkboxT2).toBeChecked()
+
+    await user.click(screen.getByRole("button", { name: "Themen speichern" }))
+    expect(handleSubmit).toHaveBeenCalledWith(["t1", "t2"])
   })
 })

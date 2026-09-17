@@ -19,6 +19,7 @@ import { AdminLoginPage } from "./features/superadmin/pages/AdminLoginPage"
 import { AdminProfilePage } from "./features/superadmin/pages/AdminProfilePage"
 import { SuperadminsListPage } from "./features/superadmin/pages/SuperadminsListPage"
 import { AdminBooksPage } from "./features/catalog/pages/admin/AdminBooksPage"
+import { AdminBookDetailPage } from "./features/catalog/pages/admin/AdminBookDetailPage"
 import { AdminThemesPage } from "./features/catalog/pages/admin/AdminThemesPage"
 import { AccountPage } from "./pages/AccountPage"
 import { PlaceholderPage } from "./pages/PlaceholderPage"
@@ -114,6 +115,10 @@ export const App = () => {
           <Route path="me" element={<AdminProfilePage />} />
           <Route path="library" element={<Navigate to="books" replace />} />
           <Route path="library/books" element={<AdminBooksPage />} />
+          <Route
+            path="library/books/:bookId"
+            element={<AdminBookDetailPage />}
+          />
           <Route path="library/themes" element={<AdminThemesPage />} />
         </Route>
       </Routes>
