@@ -2,7 +2,11 @@ import { screen, waitFor } from "@testing-library/react"
 import { beforeEach, describe, expect, it, vi } from "vitest"
 import { renderWithProviders } from "../../../utils/test-utils"
 import { catalogApi } from "../api/catalogApi"
-import type { BookSummaryView, BookView, ThemeView } from "../types/catalog.types"
+import type {
+  BookSummaryView,
+  BookView,
+  ThemeView,
+} from "../types/catalog.types"
 import { CatalogModal } from "./CatalogModal"
 
 vi.mock("../api/catalogApi", () => ({
@@ -132,7 +136,9 @@ describe("CatalogModal", () => {
 
     await waitFor(() => {
       expect(
-        screen.getByText(/wurde erfolgreich in die Community «Chor Zion» kopiert!/i),
+        screen.getByText(
+          /wurde erfolgreich in die Community «Chor Zion» kopiert!/i,
+        ),
       ).toBeInTheDocument()
     })
 

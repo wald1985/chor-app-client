@@ -9,7 +9,9 @@ describe("FeedbackModal", () => {
 
     expect(screen.getByText("Feedback geben")).toBeInTheDocument()
     expect(
-      screen.getByText(/Die direkte Feedback-Übermittlung befindet sich aktuell im Aufbau/i),
+      screen.getByText(
+        /Die direkte Feedback-Übermittlung befindet sich aktuell im Aufbau/i,
+      ),
     ).toBeInTheDocument()
     expect(screen.getByLabelText("Kategorie")).toBeInTheDocument()
     expect(screen.getByLabelText("Ihre Nachricht")).toBeInTheDocument()

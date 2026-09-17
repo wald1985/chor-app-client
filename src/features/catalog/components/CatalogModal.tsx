@@ -44,7 +44,9 @@ export const CatalogModal = ({ show, onHide }: CatalogModalProps) => {
 
   // Copying state & feedback
   const [isCopying, setIsCopying] = useState<boolean>(false)
-  const [copySuccessMessage, setCopySuccessMessage] = useState<string | null>(null)
+  const [copySuccessMessage, setCopySuccessMessage] = useState<string | null>(
+    null,
+  )
   const [copyErrorMessage, setCopyErrorMessage] = useState<string | null>(null)
 
   // Local copy tracker (triggers re-render on copy)
@@ -146,7 +148,10 @@ export const CatalogModal = ({ show, onHide }: CatalogModalProps) => {
       aria-labelledby="catalog-modal-title"
     >
       <Modal.Header closeButton className="bg-light">
-        <Modal.Title id="catalog-modal-title" className="d-flex align-items-center gap-2">
+        <Modal.Title
+          id="catalog-modal-title"
+          className="d-flex align-items-center gap-2"
+        >
           <span>📖</span>
           <span>Liederbuch-Katalog</span>
           <Badge bg="secondary" className="ms-2 fw-normal fs-6">
@@ -236,7 +241,9 @@ export const CatalogModal = ({ show, onHide }: CatalogModalProps) => {
             <p className="text-muted small mt-2">Bücher werden geladen...</p>
           </div>
         ) : books.length === 0 ? (
-          <Alert variant="info">Derzeit sind keine Bücher im Katalog vorhanden.</Alert>
+          <Alert variant="info">
+            Derzeit sind keine Bücher im Katalog vorhanden.
+          </Alert>
         ) : (
           <div>
             {/* Books Selection Grid */}
@@ -264,18 +271,27 @@ export const CatalogModal = ({ show, onHide }: CatalogModalProps) => {
                         <Card.Body className="p-3 d-flex flex-column justify-content-between">
                           <div>
                             <div className="d-flex justify-content-between align-items-start mb-1">
-                              <h6 className="fw-bold mb-0 text-truncate" title={b.title}>
+                              <h6
+                                className="fw-bold mb-0 text-truncate"
+                                title={b.title}
+                              >
                                 {b.title}
                               </h6>
                               {isCopied ? (
-                                <Badge bg="success" className="ms-1" title="In Community vorhanden">
+                                <Badge
+                                  bg="success"
+                                  className="ms-1"
+                                  title="In Community vorhanden"
+                                >
                                   ✓ Kopiert
                                 </Badge>
                               ) : null}
                             </div>
                             <div className="text-muted small mb-2">
                               {b.series ? `${b.series.title} ` : ""}
-                              {b.volume !== null ? `(Band ${String(b.volume)})` : ""}
+                              {b.volume !== null
+                                ? `(Band ${String(b.volume)})`
+                                : ""}
                               <div>{b.songCount} Lieder</div>
                             </div>
                           </div>
@@ -303,7 +319,9 @@ export const CatalogModal = ({ show, onHide }: CatalogModalProps) => {
             {isLoadingBookDetail ? (
               <div className="text-center py-4">
                 <Spinner animation="border" variant="primary" role="status" />
-                <p className="text-muted small mt-2">Lieder werden geladen...</p>
+                <p className="text-muted small mt-2">
+                  Lieder werden geladen...
+                </p>
               </div>
             ) : currentBook ? (
               <Card className="border">
@@ -323,7 +341,8 @@ export const CatalogModal = ({ show, onHide }: CatalogModalProps) => {
                         ) : null}
                       </h5>
                       <span className="text-muted small">
-                        Gesamtanzahl: <strong>{currentBook.songs.length}</strong> Lieder
+                        Gesamtanzahl:{" "}
+                        <strong>{currentBook.songs.length}</strong> Lieder
                         {copiedBookIds.has(currentBook.id) ? (
                           <Badge bg="success" className="ms-2">
                             ✓ In Community vorhanden
@@ -409,7 +428,10 @@ export const CatalogModal = ({ show, onHide }: CatalogModalProps) => {
                     <tbody>
                       {filteredSongs.length === 0 ? (
                         <tr>
-                          <td colSpan={4} className="text-center py-4 text-muted">
+                          <td
+                            colSpan={4}
+                            className="text-center py-4 text-muted"
+                          >
                             Keine Lieder entsprechen den Suchkriterien.
                           </td>
                         </tr>
@@ -421,7 +443,9 @@ export const CatalogModal = ({ show, onHide }: CatalogModalProps) => {
                             <td className="text-muted">
                               <div>{song.author ?? "—"}</div>
                               {song.arranger ? (
-                                <div className="small">Arr.: {song.arranger}</div>
+                                <div className="small">
+                                  Arr.: {song.arranger}
+                                </div>
                               ) : null}
                             </td>
                             <td>

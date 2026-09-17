@@ -25,9 +25,17 @@ export const FeedbackModal = ({ show, onHide }: FeedbackModalProps) => {
   }
 
   return (
-    <Modal show={show} onHide={handleClose} centered aria-labelledby="feedback-modal-title">
+    <Modal
+      show={show}
+      onHide={handleClose}
+      centered
+      aria-labelledby="feedback-modal-title"
+    >
       <Modal.Header closeButton>
-        <Modal.Title id="feedback-modal-title" className="d-flex align-items-center gap-2">
+        <Modal.Title
+          id="feedback-modal-title"
+          className="d-flex align-items-center gap-2"
+        >
           <span>💬</span>
           <span>Feedback geben</span>
         </Modal.Title>
@@ -35,14 +43,16 @@ export const FeedbackModal = ({ show, onHide }: FeedbackModalProps) => {
 
       <Modal.Body>
         <Alert variant="info" className="small mb-3">
-          <strong>Hinweis:</strong> Die direkte Feedback-Übermittlung befindet sich
-          aktuell im Aufbau. Sie können uns Ihre Nachricht gerne schon hinterlassen.
+          <strong>Hinweis:</strong> Die direkte Feedback-Übermittlung befindet
+          sich aktuell im Aufbau. Sie können uns Ihre Nachricht gerne schon
+          hinterlassen.
         </Alert>
 
         {isSubmitted ? (
           <Alert variant="success" className="mb-0">
-            <strong>Vielen Dank!</strong> Ihre Rückmeldung wurde entgegengenommen und
-            hilft uns bei der Weiterentwicklung der Chor-App.
+            <strong>Vielen Dank!</strong> Ihre Rückmeldung wurde
+            entgegengenommen und hilft uns bei der Weiterentwicklung der
+            Chor-App.
           </Alert>
         ) : (
           <Form onSubmit={handleSubmit}>

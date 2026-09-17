@@ -25,7 +25,9 @@ export const getCommunityRepertoireStorageKey = (communityId: string): string =>
 export const getCopiedBooks = (communityId: string): CopiedBookRecord[] => {
   if (!communityId) return []
   try {
-    const raw = sessionStorage.getItem(getCommunityRepertoireStorageKey(communityId))
+    const raw = sessionStorage.getItem(
+      getCommunityRepertoireStorageKey(communityId),
+    )
     if (!raw) return []
     return JSON.parse(raw) as CopiedBookRecord[]
   } catch {
