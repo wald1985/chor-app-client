@@ -94,4 +94,59 @@ describe("httpClient", () => {
       },
     )
   })
+
+  it("extracts error payload into HttpError", async () => {
+    vi.spyOn(globalThis, "fetch").mockResolvedValue({
+      ok: false,
+      status: 409,
+      statusText: "Conflict",
+      headers: new Headers({ "content-type": "application/json" }),
+      json: () =>
+        Promise.resolve({
+          statusCode: 409,
+          error: "Conflict",
+          message: "Item is in use",
+          code: "LIBRARY_ITEM_IN_USE",
+          usage: { communities: 3, references: 7 },
+        }),
+    } as Response)
+
+    await expect(
+      httpClient.post("/admin/library/books/123/archive"),
+    ).rejects.toSatisfy((err: unknown) => {
+      return (
+        err instanceof HttpError &&
+        err.status === 409 &&
+        err.code === "LIBRARY_ITEM_IN_USE" &&
+        err.payload !== undefined &&
+        (err.payload as { usage: { communities: number } }).usage
+          .communities === 3
+      )
+    })
+  })
+
+  it("routes token for /library/ endpoints: prefers user token, falls back to admin token", async () => {
+    const fetchSpy = vi.spyOn(globalThis, "fetch").mockResolvedValue({
+      ok: true,
+      status: 200,
+      headers: new Headers({ "content-type": "application/json" }),
+      json: () => Promise.resolve([]),
+    } as Response)
+
+    // Case 1: only admin token present -> /library/ gets admin token
+    setAdminAuthToken("admin-fallback-jwt")
+    await httpClient.get("/library/books")
+    expect(
+      (fetchSpy.mock.calls[0][1]?.headers as Record<string, string>)
+        .Authorization,
+    ).toBe("Bearer admin-fallback-jwt")
+
+    // Case 2: both present -> /library/ gets user token
+    setAuthToken("user-primary-jwt")
+    await httpClient.get("/library/books")
+    expect(
+      (fetchSpy.mock.calls[1][1]?.headers as Record<string, string>)
+        .Authorization,
+    ).toBe("Bearer user-primary-jwt")
+  })
 })

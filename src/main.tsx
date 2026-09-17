@@ -1,10 +1,20 @@
 import { StrictMode } from "react"
 import { createRoot } from "react-dom/client"
 import { Provider } from "react-redux"
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query"
 import { App } from "./App"
 import { store } from "./app/store"
 import "bootstrap/dist/css/bootstrap.min.css"
 import "./index.css"
+
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      retry: 1,
+      refetchOnWindowFocus: false,
+    },
+  },
+})
 
 const container = document.getElementById("root")
 
@@ -14,7 +24,9 @@ if (container) {
   root.render(
     <StrictMode>
       <Provider store={store}>
-        <App />
+        <QueryClientProvider client={queryClient}>
+          <App />
+        </QueryClientProvider>
       </Provider>
     </StrictMode>,
   )

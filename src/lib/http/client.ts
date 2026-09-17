@@ -29,6 +29,7 @@ type NestErrorBody = {
   message?: string | string[]
   error?: string
   code?: string
+  payload?: Record<string, unknown>
 }
 
 const isRecord = (value: unknown): value is Record<string, unknown> =>
@@ -37,7 +38,7 @@ const isRecord = (value: unknown): value is Record<string, unknown> =>
 const parseErrorBody = (value: unknown): NestErrorBody => {
   if (!isRecord(value)) return {}
 
-  const { message, error, code } = value
+  const { message, error, code, ...rest } = value
   const isStringArray = (v: unknown): v is string[] =>
     Array.isArray(v) && v.every(item => typeof item === "string")
 
@@ -50,6 +51,7 @@ const parseErrorBody = (value: unknown): NestErrorBody => {
           : undefined,
     error: typeof error === "string" ? error : undefined,
     code: typeof code === "string" ? code : undefined,
+    payload: Object.keys(rest).length > 0 ? rest : undefined,
   }
 }
 
@@ -99,7 +101,14 @@ async function request<TResponse>(
     headers["Content-Type"] = "application/json"
   }
 
-  const token = path.startsWith("/admin/") ? adminAuthToken : userAuthToken
+  let token: string | null = null
+  if (path.startsWith("/admin/")) {
+    token = adminAuthToken
+  } else if (path.startsWith("/library/")) {
+    token = userAuthToken ?? adminAuthToken
+  } else {
+    token = userAuthToken
+  }
   if (token) {
     headers.Authorization = `Bearer ${token}`
   }
@@ -132,13 +141,14 @@ async function request<TResponse>(
   const data = await readBody(response)
 
   if (!response.ok) {
-    const { message, error, code } = parseErrorBody(data)
+    const { message, error, code, payload } = parseErrorBody(data)
     if (Array.isArray(message)) {
       throw new HttpError(
         response.status,
         error ?? response.statusText,
         message,
         code,
+        payload,
       )
     }
     throw new HttpError(
@@ -146,6 +156,7 @@ async function request<TResponse>(
       message ?? error ?? response.statusText,
       undefined,
       code,
+      payload,
     )
   }
 

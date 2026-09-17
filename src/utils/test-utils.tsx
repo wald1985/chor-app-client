@@ -3,6 +3,7 @@ import { render } from "@testing-library/react"
 import userEvent from "@testing-library/user-event"
 import type { PropsWithChildren, ReactElement } from "react"
 import { Provider } from "react-redux"
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query"
 import type { AppStore, RootState } from "../app/store"
 import { makeStore } from "../app/store"
 
@@ -31,6 +32,12 @@ type ExtendedRenderOptions = Omit<RenderOptions, "queries"> & {
    * @default makeStore(preloadedState)
    */
   store?: AppStore
+
+  /**
+   * An optional QueryClient instance. Defaults to a fresh client per render
+   * with retries disabled for deterministic testing.
+   */
+  queryClient?: QueryClient
 }
 
 /**
@@ -49,16 +56,25 @@ export const renderWithProviders = (
     preloadedState = {},
     // Automatically create a store instance if no store was passed in
     store = makeStore(preloadedState),
+    queryClient = new QueryClient({
+      defaultOptions: {
+        queries: { retry: false },
+        mutations: { retry: false },
+      },
+    }),
     ...renderOptions
   } = extendedRenderOptions
 
   const Wrapper = ({ children }: PropsWithChildren) => (
-    <Provider store={store}>{children}</Provider>
+    <Provider store={store}>
+      <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>
+    </Provider>
   )
 
   // Return an object with the store and all of RTL's query functions
   return {
     store,
+    queryClient,
     user: userEvent.setup(),
     ...render(ui, { wrapper: Wrapper, ...renderOptions }),
   }
