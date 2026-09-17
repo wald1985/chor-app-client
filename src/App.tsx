@@ -18,6 +18,8 @@ import { RequireAdminGuest } from "./features/superadmin/components/RequireAdmin
 import { AdminLoginPage } from "./features/superadmin/pages/AdminLoginPage"
 import { AdminProfilePage } from "./features/superadmin/pages/AdminProfilePage"
 import { SuperadminsListPage } from "./features/superadmin/pages/SuperadminsListPage"
+import { AdminBooksPage } from "./features/catalog/pages/admin/AdminBooksPage"
+import { AdminThemesPage } from "./features/catalog/pages/admin/AdminThemesPage"
 import { AccountPage } from "./pages/AccountPage"
 import { PlaceholderPage } from "./pages/PlaceholderPage"
 
@@ -110,6 +112,9 @@ export const App = () => {
           <Route index element={<Navigate to="superadmins" replace />} />
           <Route path="superadmins" element={<SuperadminsListPage />} />
           <Route path="me" element={<AdminProfilePage />} />
+          <Route path="library" element={<Navigate to="books" replace />} />
+          <Route path="library/books" element={<AdminBooksPage />} />
+          <Route path="library/themes" element={<AdminThemesPage />} />
         </Route>
       </Routes>
     </BrowserRouter>

@@ -33,6 +33,13 @@ export const AdminLayout = () => {
             <Nav className="me-auto">
               <Nav.Link
                 as={NavLink}
+                to="/admin/library/books"
+                onClick={closeMenu}
+              >
+                Bibliothek
+              </Nav.Link>
+              <Nav.Link
+                as={NavLink}
                 to="/admin/superadmins"
                 end
                 onClick={closeMenu}
