@@ -12,6 +12,12 @@ import { RegisterPage } from "./features/auth/pages/RegisterPage"
 import { ResetPasswordPage } from "./features/auth/pages/ResetPasswordPage"
 import { bootstrap } from "./features/auth/authSlice"
 import { bootstrapAdmin } from "./features/superadmin/adminAuthSlice"
+import { AdminLayout } from "./features/superadmin/components/AdminLayout"
+import { RequireAdminAuth } from "./features/superadmin/components/RequireAdminAuth"
+import { RequireAdminGuest } from "./features/superadmin/components/RequireAdminGuest"
+import { AdminLoginPage } from "./features/superadmin/pages/AdminLoginPage"
+import { AdminProfilePage } from "./features/superadmin/pages/AdminProfilePage"
+import { SuperadminsListPage } from "./features/superadmin/pages/SuperadminsListPage"
 import { AccountPage } from "./pages/AccountPage"
 import { PlaceholderPage } from "./pages/PlaceholderPage"
 
@@ -83,6 +89,28 @@ export const App = () => {
             </RequireGuest>
           }
         />
+
+        {/* Superadmin routes */}
+        <Route
+          path="/admin/login"
+          element={
+            <RequireAdminGuest>
+              <AdminLoginPage />
+            </RequireAdminGuest>
+          }
+        />
+        <Route
+          path="/admin"
+          element={
+            <RequireAdminAuth>
+              <AdminLayout />
+            </RequireAdminAuth>
+          }
+        >
+          <Route index element={<Navigate to="superadmins" replace />} />
+          <Route path="superadmins" element={<SuperadminsListPage />} />
+          <Route path="me" element={<AdminProfilePage />} />
+        </Route>
       </Routes>
     </BrowserRouter>
   )

@@ -96,6 +96,12 @@ export const LoginPage = () => {
           {isSubmitting ? <Spinner size="sm" animation="border" /> : "Anmelden"}
         </Button>
       </Form>
+      <div className="mt-4 text-center border-top pt-3">
+        <p className="text-muted small mb-2">Administration</p>
+        <Link to="/admin/login" className="btn btn-outline-secondary btn-sm">
+          Superadmin Login
+        </Link>
+      </div>
     </AuthCard>
   )
 }
