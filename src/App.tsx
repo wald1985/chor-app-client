@@ -20,6 +20,7 @@ import { AdminProfilePage } from "./features/superadmin/pages/AdminProfilePage"
 import { SuperadminsListPage } from "./features/superadmin/pages/SuperadminsListPage"
 import { AdminBooksPage } from "./features/catalog/pages/admin/AdminBooksPage"
 import { AdminBookDetailPage } from "./features/catalog/pages/admin/AdminBookDetailPage"
+import { AdminImportPage } from "./features/catalog/pages/admin/AdminImportPage"
 import { AdminThemesPage } from "./features/catalog/pages/admin/AdminThemesPage"
 import { AccountPage } from "./pages/AccountPage"
 import { PlaceholderPage } from "./pages/PlaceholderPage"
@@ -120,6 +121,7 @@ export const App = () => {
             element={<AdminBookDetailPage />}
           />
           <Route path="library/themes" element={<AdminThemesPage />} />
+          <Route path="library/import" element={<AdminImportPage />} />
         </Route>
       </Routes>
     </BrowserRouter>
