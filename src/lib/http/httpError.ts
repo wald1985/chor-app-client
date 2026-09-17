@@ -1,12 +1,19 @@
 export class HttpError extends Error {
   readonly status: number
   readonly details: string[] | undefined
+  readonly code: string | undefined
 
-  constructor(status: number, message: string, details?: string[]) {
+  constructor(
+    status: number,
+    message: string,
+    details?: string[],
+    code?: string,
+  ) {
     super(message)
     this.name = "HttpError"
     this.status = status
     this.details = details
+    this.code = code
   }
 }
 
@@ -24,4 +31,17 @@ export const getErrorMessage = (error: unknown, fallback: string): string => {
     }
   }
   return fallback
+}
+
+/**
+ * Reads an error code off an unknown thrown value (if present).
+ */
+export const getErrorCode = (error: unknown): string | undefined => {
+  if (typeof error === "object" && error !== null && "code" in error) {
+    const { code } = error
+    if (typeof code === "string" && code.length > 0) {
+      return code
+    }
+  }
+  return undefined
 }
