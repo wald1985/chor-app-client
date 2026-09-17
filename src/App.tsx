@@ -22,6 +22,7 @@ import { AdminBooksPage } from "./features/catalog/pages/admin/AdminBooksPage"
 import { AdminBookDetailPage } from "./features/catalog/pages/admin/AdminBookDetailPage"
 import { AdminImportPage } from "./features/catalog/pages/admin/AdminImportPage"
 import { AdminThemesPage } from "./features/catalog/pages/admin/AdminThemesPage"
+import { CatalogBrowserPage } from "./features/catalog/pages/public/CatalogBrowserPage"
 import { AccountPage } from "./pages/AccountPage"
 import { PlaceholderPage } from "./pages/PlaceholderPage"
 
@@ -46,18 +47,38 @@ export const App = () => {
         >
           {/* Default landing tab, matching the prototype's initially active "Vortrag" tab. */}
           <Route index element={<Navigate to="vortrag" replace />} />
-          {navItems.map(item => (
-            <Route
-              key={item.path}
-              path={item.path}
-              element={
-                <PlaceholderPage
-                  title={item.label}
-                  description={item.description}
+          {navItems.map(item => {
+            if (item.path === "themensuche") {
+              return (
+                <Route
+                  key={item.path}
+                  path={item.path}
+                  element={<CatalogBrowserPage defaultMode="themes" />}
                 />
-              }
-            />
-          ))}
+              )
+            }
+            if (item.path === "lieder") {
+              return (
+                <Route
+                  key={item.path}
+                  path={item.path}
+                  element={<CatalogBrowserPage defaultMode="songs" />}
+                />
+              )
+            }
+            return (
+              <Route
+                key={item.path}
+                path={item.path}
+                element={
+                  <PlaceholderPage
+                    title={item.label}
+                    description={item.description}
+                  />
+                }
+              />
+            )
+          })}
           <Route path="konto" element={<AccountPage />} />
           <Route path="change-password" element={<ChangePasswordPage />} />
         </Route>
