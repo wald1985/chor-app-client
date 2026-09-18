@@ -11,12 +11,16 @@ import {
   Spinner,
   Table,
 } from "react-bootstrap"
+import { Link } from "react-router-dom"
+import { useAppSelector } from "../../../../app/hooks"
+import { selectAuthMemberships } from "../../../auth/authSlice"
 import {
   useBookDetailQuery,
   useBooksListQuery,
   useSongLookupQuery,
   useThemesListQuery,
 } from "../../hooks/useCatalogQueries"
+import { useCommunityAttachments } from "../../hooks/useCommunityAttachments"
 
 type BrowserMode = "songs" | "themes" | "lookup"
 
@@ -28,6 +32,11 @@ export const CatalogBrowserPage = ({
   defaultMode = "songs",
 }: CatalogBrowserPageProps) => {
   const [mode, setMode] = useState<BrowserMode>(defaultMode)
+
+  const memberships = useAppSelector(selectAuthMemberships)
+  const [selectedCommunityId, setSelectedCommunityId] = useState<string>(() => {
+    return memberships.length > 0 ? memberships[0].communityId : ""
+  })
 
   // Filters
   const [selectedBookId, setSelectedBookId] = useState<string>("")
@@ -42,6 +51,28 @@ export const CatalogBrowserPage = ({
   const { data: books = [], isLoading: isLoadingBooks } = useBooksListQuery({
     includeArchived: false,
   })
+
+  const { data: communityAttachments = [] } =
+    useCommunityAttachments(selectedCommunityId)
+
+  const attachedBookIds = useMemo(() => {
+    const ids = new Set<string>()
+    communityAttachments.forEach(att => {
+      if (!att.archivedAt) {
+        ids.add(att.libraryBookId)
+      }
+    })
+    return ids
+  }, [communityAttachments])
+
+  const attachedBooks = useMemo(
+    () => books.filter(b => attachedBookIds.has(b.id)),
+    [books, attachedBookIds],
+  )
+  const otherBooks = useMemo(
+    () => books.filter(b => !attachedBookIds.has(b.id)),
+    [books, attachedBookIds],
+  )
 
   const { data: themes = [], isLoading: isLoadingThemes } = useThemesListQuery({
     includeArchived: false,
@@ -150,6 +181,45 @@ export const CatalogBrowserPage = ({
           {/* Controls / Filter Card */}
           <Card className="mb-4 shadow-sm">
             <Card.Body>
+              {memberships.length > 0 && (
+                <div className="d-flex justify-content-between align-items-center mb-3 pb-2 border-bottom flex-wrap gap-2">
+                  <div className="d-flex align-items-center gap-2">
+                    <span className="text-muted small fw-semibold">
+                      Chorgemeinschaft:
+                    </span>
+                    {memberships.length === 1 ? (
+                      <span className="fw-bold small text-dark">
+                        {memberships[0].communityName}
+                      </span>
+                    ) : (
+                      <Form.Select
+                        size="sm"
+                        className="d-inline-block w-auto"
+                        value={selectedCommunityId}
+                        onChange={e => {
+                          setSelectedCommunityId(e.target.value)
+                        }}
+                      >
+                        {memberships.map(m => (
+                          <option key={m.communityId} value={m.communityId}>
+                            {m.communityName}
+                          </option>
+                        ))}
+                      </Form.Select>
+                    )}
+                  </div>
+                  {selectedCommunityId && (
+                    <Link
+                      to={`/communities/${selectedCommunityId}/repertoire`}
+                      className="btn btn-sm btn-outline-secondary d-inline-flex align-items-center gap-1 text-decoration-none"
+                    >
+                      <span>⚙️</span>
+                      <span>Repertoire-Einstellungen</span>
+                    </Link>
+                  )}
+                </div>
+              )}
+
               <Row className="g-3">
                 <Col xs={12} md={mode === "themes" ? 6 : 7}>
                   <Form.Group controlId="catalogBookSelect">
@@ -164,15 +234,44 @@ export const CatalogBrowserPage = ({
                       disabled={isLoadingBooks}
                     >
                       <option value="">Bitte ein Buch wählen...</option>
-                      {books.map(b => (
-                        <option key={b.id} value={b.id}>
-                          {b.title}{" "}
-                          {b.series
-                            ? `(${b.series.title}${b.volume !== null ? ` — Band ${String(b.volume)}` : ""})`
-                            : ""}{" "}
-                          [{b.songCount} Lieder]
-                        </option>
-                      ))}
+                      {attachedBooks.length > 0 ? (
+                        <>
+                          <optgroup label="Eingebundene Repertoire-Bücher">
+                            {attachedBooks.map(b => (
+                              <option key={b.id} value={b.id}>
+                                ✓ {b.title}{" "}
+                                {b.series
+                                  ? `(${b.series.title}${b.volume !== null ? ` — Band ${String(b.volume)}` : ""})`
+                                  : ""}{" "}
+                                [{b.songCount} Lieder]
+                              </option>
+                            ))}
+                          </optgroup>
+                          {otherBooks.length > 0 && (
+                            <optgroup label="Weitere Bibliotheksbücher">
+                              {otherBooks.map(b => (
+                                <option key={b.id} value={b.id}>
+                                  {b.title}{" "}
+                                  {b.series
+                                    ? `(${b.series.title}${b.volume !== null ? ` — Band ${String(b.volume)}` : ""})`
+                                    : ""}{" "}
+                                  [{b.songCount} Lieder]
+                                </option>
+                              ))}
+                            </optgroup>
+                          )}
+                        </>
+                      ) : (
+                        books.map(b => (
+                          <option key={b.id} value={b.id}>
+                            {b.title}{" "}
+                            {b.series
+                              ? `(${b.series.title}${b.volume !== null ? ` — Band ${String(b.volume)}` : ""})`
+                              : ""}{" "}
+                            [{b.songCount} Lieder]
+                          </option>
+                        ))
+                      )}
                     </Form.Select>
                   </Form.Group>
                 </Col>
@@ -249,11 +348,23 @@ export const CatalogBrowserPage = ({
             </Card>
           ) : (
             <div>
-              <div className="d-flex justify-content-between align-items-center mb-2">
+              <div className="d-flex justify-content-between align-items-center mb-2 flex-wrap gap-2">
                 <span className="text-muted small">
                   Gefunden: <strong>{filteredSongs.length}</strong>{" "}
                   {filteredSongs.length === 1 ? "Lied" : "Lieder"}
                 </span>
+                <div className="d-flex align-items-center gap-2">
+                  {selectedBookId && attachedBookIds.has(selectedBookId) ? (
+                    <Badge bg="success">✓ Im Repertoire eingebunden</Badge>
+                  ) : selectedBookId ? (
+                    <Badge bg="light" text="dark" className="border">
+                      Nicht im Repertoire
+                    </Badge>
+                  ) : null}
+                  <span className="text-secondary small">
+                    Quelle: Bibliothek (Nur Lesezugriff)
+                  </span>
+                </div>
               </div>
               <div className="table-responsive bg-white rounded shadow-sm border">
                 <Table hover className="align-middle mb-0">
@@ -330,14 +441,41 @@ export const CatalogBrowserPage = ({
                       disabled={isLoadingBooks}
                     >
                       <option value="">Bitte Liederbuch wählen...</option>
-                      {books.map(b => (
-                        <option key={b.id} value={b.id}>
-                          {b.title}{" "}
-                          {b.series
-                            ? `(${b.series.title}${b.volume !== null ? ` — Band ${String(b.volume)}` : ""})`
-                            : ""}
-                        </option>
-                      ))}
+                      {attachedBooks.length > 0 ? (
+                        <>
+                          <optgroup label="Eingebundene Repertoire-Bücher">
+                            {attachedBooks.map(b => (
+                              <option key={b.id} value={b.id}>
+                                ✓ {b.title}{" "}
+                                {b.series
+                                  ? `(${b.series.title}${b.volume !== null ? ` — Band ${String(b.volume)}` : ""})`
+                                  : ""}
+                              </option>
+                            ))}
+                          </optgroup>
+                          {otherBooks.length > 0 && (
+                            <optgroup label="Weitere Bibliotheksbücher">
+                              {otherBooks.map(b => (
+                                <option key={b.id} value={b.id}>
+                                  {b.title}{" "}
+                                  {b.series
+                                    ? `(${b.series.title}${b.volume !== null ? ` — Band ${String(b.volume)}` : ""})`
+                                    : ""}
+                                </option>
+                              ))}
+                            </optgroup>
+                          )}
+                        </>
+                      ) : (
+                        books.map(b => (
+                          <option key={b.id} value={b.id}>
+                            {b.title}{" "}
+                            {b.series
+                              ? `(${b.series.title}${b.volume !== null ? ` — Band ${String(b.volume)}` : ""})`
+                              : ""}
+                          </option>
+                        ))
+                      )}
                     </Form.Select>
                   </Form.Group>
                 </Col>

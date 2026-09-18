@@ -11,6 +11,7 @@
  * client reports that as an error instead of sending requests nowhere.
  */
 const devApiUrl = import.meta.env.VITE_API_URL ?? "http://localhost:5050"
+//const devApiUrl =  "http://localhost:5050"
 
 const prodApiUrls: Partial<Record<string, string>> = {
   "chorapp.wald.pro": "https://chorappserver.wald.pro",

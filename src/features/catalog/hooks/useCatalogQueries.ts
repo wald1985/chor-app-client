@@ -85,3 +85,11 @@ export const useThemesListQuery = (params?: { includeArchived?: boolean }) => {
     queryFn: () => catalogApi.getThemes(params),
   })
 }
+
+export const useLibraryBooks = (params?: {
+  seriesId?: string
+  q?: string
+  includeArchived?: boolean
+}) => {
+  return useBooksListQuery(params)
+}

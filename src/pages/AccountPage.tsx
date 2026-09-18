@@ -44,9 +44,19 @@ export const AccountPage = () => {
                 {memberships.map(membership => (
                   <ListGroup.Item
                     key={membership.communityId}
-                    className="d-flex justify-content-between align-items-center"
+                    className="d-flex justify-content-between align-items-center flex-wrap gap-2"
                   >
-                    {membership.communityName}
+                    <div>
+                      <div className="fw-semibold">
+                        {membership.communityName}
+                      </div>
+                      <Link
+                        to={`/communities/${membership.communityId}/repertoire`}
+                        className="small text-decoration-none"
+                      >
+                        Repertoire-Einstellungen →
+                      </Link>
+                    </div>
                     <span className="text-muted">
                       {roleLabel[membership.role]}
                     </span>

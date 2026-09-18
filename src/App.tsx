@@ -23,6 +23,7 @@ import { AdminBookDetailPage } from "./features/catalog/pages/admin/AdminBookDet
 import { AdminImportPage } from "./features/catalog/pages/admin/AdminImportPage"
 import { AdminThemesPage } from "./features/catalog/pages/admin/AdminThemesPage"
 import { CatalogBrowserPage } from "./features/catalog/pages/public/CatalogBrowserPage"
+import { RepertoireSettingsPage } from "./features/catalog/pages/community/RepertoireSettingsPage"
 import { AccountPage } from "./pages/AccountPage"
 import { PlaceholderPage } from "./pages/PlaceholderPage"
 
@@ -80,6 +81,10 @@ export const App = () => {
             )
           })}
           <Route path="konto" element={<AccountPage />} />
+          <Route
+            path="communities/:communityId/repertoire"
+            element={<RepertoireSettingsPage />}
+          />
           <Route path="change-password" element={<ChangePasswordPage />} />
         </Route>
         <Route

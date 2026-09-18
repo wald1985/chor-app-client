@@ -221,3 +221,30 @@ export type LibraryImportPlanChangedPayload = {
   code: "LIBRARY_IMPORT_PLAN_CHANGED"
   planHash: string
 }
+
+// --- Community Repertoire Attachments (/communities/:communityId/attachments) ---
+
+export type BookAttachmentBookView = {
+  id: string
+  title: string
+  series?: BookSummarySeriesView | null
+  volume?: number | null
+  songCount?: number
+}
+
+export type BookAttachmentView = {
+  id: string
+  communityId: string
+  libraryBookId: string
+  bookTitle?: string
+  seriesTitle?: string | null
+  volume?: number | null
+  songCount?: number
+  book?: BookAttachmentBookView | null
+  archivedAt?: string | null
+  createdAt?: string
+}
+
+export type CreateAttachmentDto = {
+  libraryBookId: string
+}
