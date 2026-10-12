@@ -23,6 +23,8 @@ import { AdminBookDetailPage } from "./features/catalog/pages/admin/AdminBookDet
 import { AdminImportPage } from "./features/catalog/pages/admin/AdminImportPage"
 import { AdminThemesPage } from "./features/catalog/pages/admin/AdminThemesPage"
 import { MembersPage } from "./features/members/pages/MembersPage"
+import { PerformancePage } from "./features/singing-log/pages/PerformancePage"
+import { RehearsalPage } from "./features/singing-log/pages/RehearsalPage"
 import { PeoplePage } from "./features/people/pages/PeoplePage"
 import { RepertoireSongsPage } from "./features/repertoire/pages/RepertoireSongsPage"
 import { CatalogBrowserPage } from "./features/catalog/pages/public/CatalogBrowserPage"
@@ -67,6 +69,24 @@ export const App = () => {
                   key={item.path}
                   path={item.path}
                   element={<RepertoireSongsPage mode="songs" />}
+                />
+              )
+            }
+            if (item.path === "vortrag") {
+              return (
+                <Route
+                  key={item.path}
+                  path={item.path}
+                  element={<PerformancePage />}
+                />
+              )
+            }
+            if (item.path === "chorprobe") {
+              return (
+                <Route
+                  key={item.path}
+                  path={item.path}
+                  element={<RehearsalPage />}
                 />
               )
             }

@@ -16,6 +16,11 @@ export const PERMISSION_OPTIONS: {
     label: "Repertoire verwalten",
     description: "Bücher einbinden sowie Mappen, Lieder und Themen pflegen",
   },
+  {
+    value: "SINGING_LOG_MANAGE",
+    label: "Vorträge und Proben erfassen",
+    description: "Gesungene Lieder bei Vorträgen und Chorproben eintragen",
+  },
 ]
 
 export const getMemberErrorMessage = (error: unknown): string => {

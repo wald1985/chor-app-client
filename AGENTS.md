@@ -115,6 +115,11 @@ feature (auth) was built — don't reintroduce RTK Query.
   from `AccountPage` for administrators. Lists members and lets the
   Administrator toggle `PEOPLE_MANAGE`/`REPERTOIRE_MANAGE` per member
   (`PUT` replaces the full set). Docs: `docs/feature/members/MEMBERS_CLIENT.md`.
+- **Singing log** (`src/features/singing-log/`): the `vortrag` tab (a song
+  sung outside a rehearsal) and the `chorprobe` tab (rehearsal on a date with
+  warm-up leader and ordered songs). Writes need `SINGING_LOG_MANAGE`; the
+  active rehearsal lives in the URL (`?probe=`). Docs:
+  `docs/feature/singing-log/SINGING_LOG_CLIENT.md`.
 - **Active Community** = the first membership from login/me
   (`useActiveCommunity`, in `src/features/auth/hooks/`); there is no switcher
   yet. Memberships carry `permissions`; use `useCommunityPermission` to hide actions the server
