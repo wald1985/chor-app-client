@@ -1,9 +1,14 @@
 export type CommunityRole = "ADMINISTRATOR" | "MEMBER"
 
+/** Mirrors `chor-app-server`'s `CommunityPermission` enum. */
+export type CommunityPermission = "PEOPLE_MANAGE" | "REPERTOIRE_MANAGE"
+
 export type CommunityMembership = {
   communityId: string
   communityName: string
   role: CommunityRole
+  /** Effective permissions: administrators get all of them from the server. */
+  permissions: CommunityPermission[]
 }
 
 export type AuthUser = {

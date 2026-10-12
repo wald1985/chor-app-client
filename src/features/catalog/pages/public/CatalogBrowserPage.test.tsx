@@ -83,6 +83,7 @@ describe("CatalogBrowserPage with Community attachments", () => {
                 communityId: "comm-1",
                 communityName: "Chor Zion",
                 role: "MEMBER",
+                permissions: [],
               },
             ],
             remember: false,

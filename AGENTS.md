@@ -100,8 +100,25 @@ feature (auth) was built — don't reintroduce RTK Query.
   its collapsible menu instead. Account data (name, email, Community
   memberships, change password, sign out) moved off the landing page into
   `AccountPage` at `/konto`, reachable from the header's account dropdown.
-- No Community-scoped feature exists yet, so there's no "active Community"
-  switcher — `AccountPage` just lists the memberships login/me returned.
+- **Repertoire** (`src/features/repertoire/`, plus the book-attachment UI in
+  `src/features/catalog/`): the `lieder` and `themensuche` tabs show the
+  active Community's songs (`GET /communities/:id/songs`) with client-side
+  search/collection/theme filters; `/communities/:id/repertoire` manages
+  attached library books. Folders (_Mappe_) and Community themes UI are
+  not built yet. Plan and status:
+  `docs/feature/repertoire/REPERTOIRE_CLIENT.md`.
+- **People** (`src/features/people/`): the `verwaltung` tab ("Personen
+  verwalten") lists the active Community's pianists/conductors, with role
+  filter, archived toggle and create/edit/archive/restore (the write actions
+  only with `PEOPLE_MANAGE`). Docs: `docs/feature/people/PEOPLE_CLIENT.md`.
+- **Members** (`src/features/members/`): `/communities/:id/members`, linked
+  from `AccountPage` for administrators. Lists members and lets the
+  Administrator toggle `PEOPLE_MANAGE`/`REPERTOIRE_MANAGE` per member
+  (`PUT` replaces the full set). Docs: `docs/feature/members/MEMBERS_CLIENT.md`.
+- **Active Community** = the first membership from login/me
+  (`useActiveCommunity`, in `src/features/auth/hooks/`); there is no switcher
+  yet. Memberships carry `permissions`; use `useCommunityPermission` to hide actions the server
+  would reject (the server always enforces).
 
 ## Deployment & CI/CD
 

@@ -56,6 +56,14 @@ export const AccountPage = () => {
                       >
                         Repertoire-Einstellungen →
                       </Link>
+                      {membership.role === "ADMINISTRATOR" && (
+                        <Link
+                          to={`/communities/${membership.communityId}/members`}
+                          className="small text-decoration-none d-block"
+                        >
+                          Mitglieder &amp; Berechtigungen →
+                        </Link>
+                      )}
                     </div>
                     <span className="text-muted">
                       {roleLabel[membership.role]}

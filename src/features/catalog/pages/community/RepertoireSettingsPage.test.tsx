@@ -53,6 +53,7 @@ describe("RepertoireSettingsPage", () => {
                 communityId: "comm-1",
                 communityName: "Chor Zion",
                 role: "MEMBER",
+                permissions: [],
               },
             ],
             remember: false,

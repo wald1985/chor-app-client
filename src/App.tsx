@@ -22,6 +22,9 @@ import { AdminBooksPage } from "./features/catalog/pages/admin/AdminBooksPage"
 import { AdminBookDetailPage } from "./features/catalog/pages/admin/AdminBookDetailPage"
 import { AdminImportPage } from "./features/catalog/pages/admin/AdminImportPage"
 import { AdminThemesPage } from "./features/catalog/pages/admin/AdminThemesPage"
+import { MembersPage } from "./features/members/pages/MembersPage"
+import { PeoplePage } from "./features/people/pages/PeoplePage"
+import { RepertoireSongsPage } from "./features/repertoire/pages/RepertoireSongsPage"
 import { CatalogBrowserPage } from "./features/catalog/pages/public/CatalogBrowserPage"
 import { RepertoireSettingsPage } from "./features/catalog/pages/community/RepertoireSettingsPage"
 import { AccountPage } from "./pages/AccountPage"
@@ -54,7 +57,7 @@ export const App = () => {
                 <Route
                   key={item.path}
                   path={item.path}
-                  element={<CatalogBrowserPage defaultMode="themes" />}
+                  element={<RepertoireSongsPage mode="themes" />}
                 />
               )
             }
@@ -63,7 +66,16 @@ export const App = () => {
                 <Route
                   key={item.path}
                   path={item.path}
-                  element={<CatalogBrowserPage defaultMode="songs" />}
+                  element={<RepertoireSongsPage mode="songs" />}
+                />
+              )
+            }
+            if (item.path === "verwaltung") {
+              return (
+                <Route
+                  key={item.path}
+                  path={item.path}
+                  element={<PeoplePage />}
                 />
               )
             }
@@ -80,10 +92,18 @@ export const App = () => {
               />
             )
           })}
+          <Route
+            path="katalog"
+            element={<CatalogBrowserPage defaultMode="songs" />}
+          />
           <Route path="konto" element={<AccountPage />} />
           <Route
             path="communities/:communityId/repertoire"
             element={<RepertoireSettingsPage />}
+          />
+          <Route
+            path="communities/:communityId/members"
+            element={<MembersPage />}
           />
           <Route path="change-password" element={<ChangePasswordPage />} />
         </Route>
