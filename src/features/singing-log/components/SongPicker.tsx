@@ -13,9 +13,11 @@ type SongPickerProps = {
 }
 
 /**
- * Find a song the way the choir does: pick a collection, type the number (or
- * part of the title) and click the match. Collection and search text stay
- * while the same list is filled in again; the search clears after a save.
+ * Find a song the way the choir does: pick a collection (book or folder),
+ * then pick the song from a dropdown of that collection's songs; the text
+ * field narrows that dropdown by number or title. Without a collection the
+ * text field searches all songs and lists the matches. Collection and search
+ * text stay while the form is filled in again; the search clears after a save.
  */
 export const SongPicker = ({
   songs,
@@ -43,11 +45,22 @@ export const SongPicker = ({
 
   const selected = activeSongs.find(s => s.id === value) ?? null
 
+  // With a collection chosen the songs go into the dropdown, in number order.
+  const collectionSongs = useMemo(
+    () =>
+      containerId
+        ? filterSongs(activeSongs, { search: query, containerId, themeKey: "" })
+        : [],
+    [activeSongs, query, containerId],
+  )
+
+  // Without a collection a search lists matches across all collections.
   const matches = useMemo(() => {
+    if (containerId) return collectionSongs
     if (!query.trim()) return []
     const found = filterSongs(activeSongs, {
       search: query,
-      containerId,
+      containerId: "",
       themeKey: "",
     })
     const exact = query.trim().toLocaleLowerCase("de")
@@ -57,7 +70,7 @@ export const SongPicker = ({
         Number(b.number.toLocaleLowerCase("de") === exact) -
         Number(a.number.toLocaleLowerCase("de") === exact),
     )
-  }, [activeSongs, query, containerId])
+  }, [activeSongs, query, containerId, collectionSongs])
 
   if (selected) {
     return (
@@ -81,6 +94,8 @@ export const SongPicker = ({
       </div>
     )
   }
+
+  const showSongSelect = containerId !== ""
 
   return (
     <div>
@@ -106,7 +121,9 @@ export const SongPicker = ({
         </Form.Group>
         <Form.Group controlId="songPickerQuery" className="flex-fill">
           <Form.Label className="small fw-semibold text-muted">
-            Liednummer oder Titel
+            {showSongSelect
+              ? "Nach Nummer oder Titel eingrenzen"
+              : "Liednummer oder Titel"}
           </Form.Label>
           <Form.Control
             type="search"
@@ -125,10 +142,37 @@ export const SongPicker = ({
           />
         </Form.Group>
       </div>
-      {query.trim() &&
+
+      {showSongSelect ? (
+        <Form.Group controlId="songPickerSong" className="mt-2">
+          <Form.Label className="small fw-semibold text-muted">
+            Lied ({collectionSongs.length})
+          </Form.Label>
+          <Form.Select
+            value=""
+            disabled={disabled || collectionSongs.length === 0}
+            onChange={e => {
+              onChange(e.target.value)
+            }}
+          >
+            <option value="">
+              {collectionSongs.length === 0
+                ? "Kein Lied gefunden"
+                : "Lied wählen ..."}
+            </option>
+            {collectionSongs.map(song => (
+              <option key={song.id} value={song.id}>
+                {song.number} – {song.title}
+              </option>
+            ))}
+          </Form.Select>
+        </Form.Group>
+      ) : (
+        query.trim() &&
         (matches.length === 0 ? (
           <div className="small text-muted mt-2">
-            Kein Lied gefunden. Prüfen Sie Sammlung und Nummer.
+            Kein Lied gefunden. Wählen Sie eine Sammlung oder ändern Sie die
+            Suche.
           </div>
         ) : (
           <ListGroup className="mt-2">
@@ -153,7 +197,8 @@ export const SongPicker = ({
               </ListGroup.Item>
             )}
           </ListGroup>
-        ))}
+        ))
+      )}
     </div>
   )
 }

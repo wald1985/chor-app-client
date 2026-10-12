@@ -1,4 +1,4 @@
-import { render, screen } from "@testing-library/react"
+import { render, screen, within } from "@testing-library/react"
 import userEvent from "@testing-library/user-event"
 import { useState } from "react"
 import { describe, expect, it } from "vitest"
@@ -61,14 +61,67 @@ describe("SongPicker", () => {
     expect(screen.getByText(/Kein Lied gefunden/)).toBeInTheDocument()
   })
 
-  it("restricts to the chosen collection", async () => {
+  it("after choosing a collection offers a dropdown of exactly its songs", async () => {
+    const user = userEvent.setup()
+    const chosen: string[] = []
+    render(<Harness onValue={id => chosen.push(id)} />)
+
+    await user.selectOptions(screen.getByLabelText("Sammlung"), "f-1")
+    const options = within(screen.getByLabelText(/^Lied \(/)).getAllByRole(
+      "option",
+    )
+    expect(options.map(o => o.textContent)).toEqual([
+      "Lied wählen ...",
+      "42 – Mappenlied",
+    ])
+
+    await user.selectOptions(screen.getByLabelText(/^Lied \(/), "s-m1")
+    expect(chosen).toEqual(["s-m1"])
+    expect(screen.getByText(/Mappenlied/)).toBeInTheDocument()
+  })
+
+  it("lists the whole collection in number order and narrows it by number or title", async () => {
     const user = userEvent.setup()
     render(<Harness />)
 
-    await user.selectOptions(screen.getByLabelText("Sammlung"), "f-1")
-    await user.type(screen.getByLabelText("Liednummer oder Titel"), "42")
-    expect(screen.getAllByRole("button")).toHaveLength(1)
-    expect(screen.getByRole("button")).toHaveTextContent("Mappenlied")
+    await user.selectOptions(screen.getByLabelText("Sammlung"), "book-1")
+    const labels = () =>
+      within(screen.getByLabelText(/^Lied \(/))
+        .getAllByRole("option")
+        .map(o => o.textContent)
+    expect(labels()).toEqual([
+      "Lied wählen ...",
+      "42 – Großer Gott",
+      "420 – Anderes Lied",
+    ])
+    expect(screen.getByLabelText(/^Lied \(2\)/)).toBeInTheDocument()
+
+    await user.type(
+      screen.getByLabelText("Nach Nummer oder Titel eingrenzen"),
+      "anderes",
+    )
+    expect(labels()).toEqual(["Lied wählen ...", "420 – Anderes Lied"])
+
+    await user.clear(screen.getByLabelText("Nach Nummer oder Titel eingrenzen"))
+    await user.type(
+      screen.getByLabelText("Nach Nummer oder Titel eingrenzen"),
+      "zzz",
+    )
+    expect(screen.getByLabelText(/^Lied \(0\)/)).toBeDisabled()
+    expect(labels()).toEqual(["Kein Lied gefunden"])
+  })
+
+  it("Enter in the narrowing field picks the first remaining song", async () => {
+    const user = userEvent.setup()
+    const chosen: string[] = []
+    render(<Harness onValue={id => chosen.push(id)} />)
+
+    await user.selectOptions(screen.getByLabelText("Sammlung"), "book-1")
+    await user.type(
+      screen.getByLabelText("Nach Nummer oder Titel eingrenzen"),
+      "420{Enter}",
+    )
+    expect(chosen).toEqual(["s-420"])
   })
 
   it("selects by click or Enter, shows the song and lets the user change it", async () => {
